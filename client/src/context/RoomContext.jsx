@@ -95,6 +95,8 @@ export const RoomProvider = ({ children }) => {
   const [myRole, setMyRole] = useState('Participant');
   const [participants, setParticipants] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [videoQueue, setVideoQueue] = useState([]);
+  const [pendingVideoRequests, setPendingVideoRequests] = useState([]);
   const [onlineCount, setOnlineCount] = useState(1);
   const [isConnected, setIsConnected] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -161,6 +163,8 @@ export const RoomProvider = ({ children }) => {
     }
     if (snapshot.myRole) setMyRole(snapshot.myRole);
     if (Array.isArray(snapshot.pendingRequests)) setPendingRequests(snapshot.pendingRequests);
+    if (Array.isArray(snapshot.videoQueue)) setVideoQueue(snapshot.videoQueue);
+    if (Array.isArray(snapshot.pendingVideoRequests)) setPendingVideoRequests(snapshot.pendingVideoRequests);
     if (typeof snapshot.onlineCount === 'number') setOnlineCount(snapshot.onlineCount);
     // A seek command belongs to the previous room/session; never replay it
     // against a newly joined room after navigation or reconnect.
@@ -365,6 +369,37 @@ export const RoomProvider = ({ children }) => {
     socket.on('request_rejected', (data) => {
       if (Array.isArray(data.pendingRequests)) setPendingRequests(data.pendingRequests);
       showNotification('Request declined.', 'warning');
+    });
+
+    // Persistent watch queue and participant video suggestions.
+    socket.on('queue_updated', (data) => {
+      if (Array.isArray(data?.videoQueue)) setVideoQueue(data.videoQueue);
+      if (Array.isArray(data?.pendingVideoRequests)) setPendingVideoRequests(data.pendingVideoRequests);
+    });
+
+    socket.on('video_request_received', (data) => {
+      if (Array.isArray(data?.videoQueue)) setVideoQueue(data.videoQueue);
+      if (Array.isArray(data?.pendingVideoRequests)) setPendingVideoRequests(data.pendingVideoRequests);
+      if (data?.request) {
+        if (data.request.userId !== liveStateRef.current.userId) {
+          showNotification(`${data.request.username} suggested a video for the watch queue.`, 'info');
+        }
+      }
+    });
+
+    socket.on('video_request_resolved', (data) => {
+      if (Array.isArray(data?.videoQueue)) setVideoQueue(data.videoQueue);
+      if (Array.isArray(data?.pendingVideoRequests)) setPendingVideoRequests(data.pendingVideoRequests);
+      if (data?.requesterUserId === liveStateRef.current.userId) {
+        showNotification(
+          data.approved
+            ? 'Your video suggestion was approved and added to the queue.'
+            : 'Your video suggestion was declined.',
+          data.approved ? 'success' : 'warning'
+        );
+      } else if (data?.requestId && data?.approved) {
+        showNotification('A participant video suggestion was added to the queue.', 'success');
+      }
     });
 
     socket.on('error', (err) => {
@@ -594,6 +629,8 @@ export const RoomProvider = ({ children }) => {
       setMyRole('Participant');
       setParticipants([]);
       setPendingRequests([]);
+      setVideoQueue([]);
+      setPendingVideoRequests([]);
       setOnlineCount(0);
       setMessages([]);
       setActiveReactions([]);
@@ -700,6 +737,58 @@ export const RoomProvider = ({ children }) => {
     });
   }, [showNotification]);
 
+  // Queue actions share one acknowledgement path so the UI never claims a
+  // queue mutation succeeded before the server has persisted it.
+  const emitQueueAction = useCallback((eventName, payload, successMessage) => {
+    return new Promise((resolve, reject) => {
+      const socket = getSocket();
+      if (!socket || !socket.connected) {
+        const error = new Error('Not connected to server.');
+        showNotification(error.message, 'error');
+        reject(error);
+        return;
+      }
+
+      socket.emit(eventName, payload || {}, (res) => {
+        if (res?.success) {
+          const data = res.data || {};
+          if (Array.isArray(data.videoQueue)) setVideoQueue(data.videoQueue);
+          if (Array.isArray(data.pendingVideoRequests)) setPendingVideoRequests(data.pendingVideoRequests);
+          if (successMessage) showNotification(successMessage, 'success');
+          resolve(res);
+        } else {
+          const error = new Error(res?.message || 'Queue action failed.');
+          showNotification(error.message, 'error');
+          reject(error);
+        }
+      });
+    });
+  }, [showNotification]);
+
+  const sendAddToQueue = useCallback((url) => (
+    emitQueueAction('add_to_queue', { url }, 'Video added to the watch queue.')
+  ), [emitQueueAction]);
+
+  const sendRequestQueueVideo = useCallback((url) => (
+    emitQueueAction('request_queue_video', { url }, 'Video suggestion sent to the Host and Moderators.')
+  ), [emitQueueAction]);
+
+  const sendApproveVideoRequest = useCallback((requestId) => (
+    emitQueueAction('approve_video_request', { requestId }, 'Video suggestion approved and added to the queue.')
+  ), [emitQueueAction]);
+
+  const sendRejectVideoRequest = useCallback((requestId) => (
+    emitQueueAction('reject_video_request', { requestId }, 'Video suggestion rejected.')
+  ), [emitQueueAction]);
+
+  const sendRemoveQueueItem = useCallback((itemId) => (
+    emitQueueAction('remove_from_queue', { itemId }, 'Video removed from the queue.')
+  ), [emitQueueAction]);
+
+  const sendPlayNextVideo = useCallback(() => (
+    emitQueueAction('play_next_video', {}, 'Playing the next video in the queue.')
+  ), [emitQueueAction]);
+
   const value = {
     user,
     token: null,
@@ -717,6 +806,8 @@ export const RoomProvider = ({ children }) => {
     myRole,
     participants,
     pendingRequests,
+    videoQueue,
+    pendingVideoRequests,
     onlineCount,
     isConnected,
     notification,
@@ -742,6 +833,12 @@ export const RoomProvider = ({ children }) => {
     sendPlaybackRequest,
     sendApproveRequest,
     sendRejectRequest,
+    sendAddToQueue,
+    sendRequestQueueVideo,
+    sendApproveVideoRequest,
+    sendRejectVideoRequest,
+    sendRemoveQueueItem,
+    sendPlayNextVideo,
     showNotification,
   };
 

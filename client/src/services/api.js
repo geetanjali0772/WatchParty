@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) return '/api';
+  const trimmed = envUrl.replace(/\/+$/, '');
+  // If an absolute URL is provided without /api (e.g. https://server.onrender.com), append /api
+  if (/^https?:\/\//i.test(trimmed) && !trimmed.endsWith('/api')) {
+    return `${trimmed}/api`;
+  }
+  return trimmed;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

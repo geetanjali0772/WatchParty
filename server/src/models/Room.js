@@ -32,6 +32,28 @@ const PendingRequestSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const VideoQueueItemSchema = new mongoose.Schema(
+  {
+    itemId: { type: String, required: true },
+    videoId: { type: String, required: true },
+    addedByUserId: { type: String, required: true },
+    addedByUsername: { type: String, required: true },
+    addedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const PendingVideoRequestSchema = new mongoose.Schema(
+  {
+    requestId: { type: String, required: true },
+    videoId: { type: String, required: true },
+    userId: { type: String, required: true },
+    username: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const RoomSchema = new mongoose.Schema(
   {
     roomId: {
@@ -83,6 +105,16 @@ const RoomSchema = new mongoose.Schema(
     },
     pendingRequests: {
       type: [PendingRequestSchema],
+      default: [],
+    },
+    // Persistent watch queue. Items are removed only when played or removed by
+    // a Host/Moderator, so the order survives refreshes and reconnects.
+    videoQueue: {
+      type: [VideoQueueItemSchema],
+      default: [],
+    },
+    pendingVideoRequests: {
+      type: [PendingVideoRequestSchema],
       default: [],
     },
     createdAt: {

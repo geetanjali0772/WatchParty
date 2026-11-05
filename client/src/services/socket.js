@@ -1,8 +1,17 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL ||
-  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000');
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) {
+    return import.meta.env.VITE_SOCKET_URL.replace(/\/+$/, '');
+  }
+  // Fall back to VITE_API_URL if defined with an absolute URL (strip trailing /api)
+  if (import.meta.env.VITE_API_URL && /^https?:\/\//i.test(import.meta.env.VITE_API_URL)) {
+    return import.meta.env.VITE_API_URL.replace(/\/+$/, '').replace(/\/api$/, '');
+  }
+  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000';
+};
+
+const SOCKET_URL = getSocketUrl();
 
 let socketInstance = null;
 

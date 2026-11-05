@@ -35,7 +35,7 @@ export const registerReactionHandlers = (io, socket) => {
         socket.emit('error', payload);
         if (typeof ack === 'function') ack({ success: false, ...payload });
       };
-      if (!roomId || !userId) {
+      if (!roomId || !userId || !socket.rooms?.has(roomId)) {
         return fail('Unauthorized: You must join a room before sending reactions', 'UNAUTHORIZED');
       }
 
@@ -52,7 +52,7 @@ export const registerReactionHandlers = (io, socket) => {
       }
 
       // 3. Verify that participant exists in MongoDB for this room
-      const participant = await Participant.findOne({ roomId: cleanRoomId, userId });
+      const participant = await Participant.findOne({ roomId: cleanRoomId, userId, isOnline: true });
       if (!participant) {
         return fail('Unauthorized: Participant not found in room', 'UNAUTHORIZED');
       }

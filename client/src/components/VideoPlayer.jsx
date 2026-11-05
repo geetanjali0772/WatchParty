@@ -19,7 +19,8 @@ export const VideoPlayer = ({
   onPause,
   onSeek,
   onChangeVideo,
-  onRequestVideoChange,
+  onAddToQueue,
+  onRequestQueueVideo,
   onRequestAction,
 }) => {
   const containerRef = useRef(null);
@@ -115,7 +116,7 @@ export const VideoPlayer = ({
 
       {/* Floating Reaction Picker Bar */}
       <div className="flex items-center justify-between px-1">
-        <ReactionPicker onSelectEmoji={onSelectReaction} />
+        <ReactionPicker onSelectReaction={onSelectReaction} />
       </div>
 
       {/* Playback Controls Card */}
@@ -140,7 +141,8 @@ export const VideoPlayer = ({
       <VideoInput
         canControl={canControl}
         onChangeVideo={onChangeVideo}
-        onRequestVideoChange={onRequestVideoChange}
+      onAddToQueue={onAddToQueue}
+      onRequestQueueVideo={onRequestQueueVideo}
       />
     </div>
   );

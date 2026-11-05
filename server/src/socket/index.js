@@ -4,6 +4,7 @@ import { registerRoleHandlers } from './roleHandler.js';
 import { registerRequestHandlers } from './requestHandler.js';
 import { registerChatHandlers } from './chatHandler.js';
 import { registerReactionHandlers } from './reactionHandler.js';
+import { registerQueueHandlers } from './queueHandler.js';
 import { socketAuthMiddleware } from '../middleware/authMiddleware.js';
 import { Room } from '../models/Room.js';
 
@@ -25,6 +26,7 @@ export const initSocket = (io) => {
     registerRequestHandlers(io, socket);
     registerChatHandlers(io, socket);
     registerReactionHandlers(io, socket);
+    registerQueueHandlers(io, socket);
   });
 
   // Periodic drift check & sync broadcast for active rooms (every 8 seconds)

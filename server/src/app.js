@@ -9,20 +9,34 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
+// Trust reverse proxy headers (required for Render/Heroku/Vercel to correctly identify HTTPS & client IP)
+app.set('trust proxy', 1);
+
 export const isAllowedOrigin = (origin) => {
   // Allow non-browser requests (e.g., mobile apps, curl, server-to-server)
   if (!origin) return true;
 
+  const normalizedOrigin = origin.replace(/\/+$/, '');
+
   // Allow any localhost / 127.0.0.1 port in development (e.g., 5173, 5174, 5175, etc.)
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin)) {
     return true;
   }
 
-  // Check configured CLIENT_URL (supports comma-separated list or '*')
+  // Check configured CLIENT_URL (supports comma-separated list, trailing slash normalization, and wildcard patterns)
   if (process.env.CLIENT_URL) {
-    const configured = process.env.CLIENT_URL.split(',').map((url) => url.trim());
-    if (configured.includes('*') || configured.includes(origin)) {
+    const configured = process.env.CLIENT_URL.split(',').map((url) => url.trim().replace(/\/+$/, ''));
+    if (configured.includes('*') || configured.includes(normalizedOrigin)) {
       return true;
+    }
+    // Also support wildcard matching e.g. https://*.vercel.app
+    for (const pattern of configured) {
+      if (pattern.includes('*')) {
+        const regex = new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$');
+        if (regex.test(normalizedOrigin)) {
+          return true;
+        }
+      }
     }
   }
 
@@ -78,7 +92,11 @@ app.use(cookieParser());
 app.use(authenticateUser);
 app.use(csrfProtection);
 
-// Health Check
+// Health Check and Root Service Check (useful for hosting platform ping/monitoring like Render)
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'WatchParty Backend Service', time: new Date() });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'WatchParty Backend', time: new Date() });
 });

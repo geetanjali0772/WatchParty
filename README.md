@@ -1,6 +1,13 @@
 # WatchParty 🎬🍿
 > Watch YouTube Together in Real Time with Sub-Second Synchronization & Role-Based Control.
 
+[![Repository](https://img.shields.io/badge/GitHub-geetanjali0772%2FWatchParty-10b981?style=for-the-badge&logo=github)](https://github.com/geetanjali0772/WatchParty.git)
+[![React](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-4.8-010101?style=for-the-badge&logo=socket.io)](https://socket.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47a248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
+
 ---
 
 ## 1. Project Overview
@@ -8,6 +15,8 @@
 **WatchParty** is a full-stack, enterprise-grade real-time web application built with the MERN stack (MongoDB, Express.js, React, Node.js) and Socket.IO. It empowers groups of friends, communities, and remote teams to create virtual watch rooms and stream YouTube videos in perfect synchrony across all connected devices.
 
 Whenever a room controller plays, pauses, seeks, or changes a video, every connected participant's player reacts synchronously. A role-based access control (RBAC) engine ensures organized playback while giving participants an approval-driven request interface.
+
+- **GitHub Repository:** [https://github.com/geetanjali0772/WatchParty.git](https://github.com/geetanjali0772/WatchParty.git)
 
 ---
 
@@ -24,6 +33,7 @@ Whenever a room controller plays, pauses, seeks, or changes a video, every conne
 - **JWT-Based Authentication & Verified Identity:**
   - Secure token creation (`POST /api/auth/session`) supporting seamless guest participation.
   - Cryptographically signed HttpOnly cookie storage (`wp_token`) with Bearer token header fallback.
+  - Cross-domain cookie support (`sameSite: 'none'`, `secure: true`) for separated frontend and backend deployments.
   - Socket.IO connection handshake identity verification via `socketAuthMiddleware`.
   - Zero trust in client-supplied role or permissions; user identity derived strictly from verified JWT claims.
 - **Real-Time Video Synchronization:**
@@ -77,7 +87,7 @@ Whenever a room controller plays, pauses, seeks, or changes a video, every conne
 - **Framework:** React.js (Vite)
 - **Language:** JavaScript (ES Modules, strictly JS — no TypeScript)
 - **Styling:** Tailwind CSS (Modern Emerald Green & Mint theme)
-- **Routing:** React Router DOM (v6)
+- **Routing:** React Router DOM (v6) with Vercel SPA rewrites
 - **API Client:** Axios (with automatic credentials and session refresh interceptors)
 - **Real-Time:** Socket.IO Client (v4)
 - **Icons:** Lucide React
@@ -85,7 +95,7 @@ Whenever a room controller plays, pauses, seeks, or changes a video, every conne
 
 ### Backend
 - **Runtime:** Node.js (v20+)
-- **Framework:** Express.js (v4)
+- **Framework:** Express.js (v4) with `trust proxy` enabled for cloud platforms (Render, Heroku)
 - **Language:** JavaScript (ES Modules)
 - **Database:** MongoDB & Mongoose (v8) with Replica Set transaction support
 - **Real-Time Engine:** Socket.IO (v4)
@@ -100,7 +110,7 @@ WatchParty utilizes a decoupled client-server architecture:
 ```
 ┌────────────────────────────────┐         REST API (HTTP/JSON)    ┌────────────────────────────────┐
 │         React Client           │ ──────────────────────────────> │       Express.js Server        │
-│                                │ <────────────────────────────── │                                │
+│   (Deployed on Vercel)         │ <────────────────────────────── │      (Deployed on Render)      │
 │   • YouTube IFrame API         │                                 │   • Room Controller            │
 │   • Custom Controls & Scrubber │     Bidirectional WebSockets    │   • Auth Middleware (JWT/Cookie)│
 │   • Room Context & State Store │ <═════════════════════════════> │   • Permission Service (RBAC)  │
@@ -111,7 +121,7 @@ WatchParty utilizes a decoupled client-server architecture:
                                                                            Mongoose │ Queries & Transactions
                                                                                     ▼
                                                                    ┌────────────────────────────────┐
-                                                                   │       MongoDB Database         │
+                                                                   │    MongoDB Database (Atlas)    │
                                                                    │   • rooms collection           │
                                                                    │   • participants collection    │
                                                                    │   • messages collection        │
@@ -128,9 +138,10 @@ WatchParty utilizes a decoupled client-server architecture:
 
 ```
 WatchParty/
-├── package.json                   # Root workspace scripts
 ├── README.md                      # Comprehensive project documentation
-├── server/                        # Backend Application
+├── .gitignore                     # Git ignore rules
+│
+├── server/                        # Backend Application (Deploy to Render)
 │   ├── src/
 │   │   ├── config/
 │   │   │   └── db.js              # Mongoose MongoDB connection
@@ -165,11 +176,12 @@ WatchParty/
 │   │   ├── app.js                 # Express application & CORS configuration
 │   │   └── server.js              # HTTP server & Socket.IO initialization
 │   ├── test/
-│   │   └── watchparty.test.js     # Full 54-scenario automated test suite
+│   │   └── watchparty.test.js     # Full automated test suite
+│   ├── .env                       # Backend local environment variables
 │   ├── .env.example               # Backend environment template
 │   └── package.json               # Backend dependencies and scripts
 │
-└── client/                        # Frontend Application
+└── client/                        # Frontend Application (Deploy to Vercel)
     ├── src/
     │   ├── components/
     │   │   ├── Navbar.jsx             # Top branding, about modal, display name
@@ -183,7 +195,7 @@ WatchParty/
     │   │   ├── ChatPanel.jsx          # Real-time text chat & quick emoji bar
     │   │   └── EmojiOverlay.jsx       # Floating emoji reaction animations
     │   ├── pages/
-    │   │   ├── Home.jsx               # Hero landing page matching design mockup
+    │   │   ├── Home.jsx               # Hero landing page
     │   │   ├── CreateRoom.jsx         # Room creation card
     │   │   ├── JoinRoom.jsx           # Room join card with direct link support
     │   │   └── WatchRoom.jsx          # Main 3-column video party dashboard
@@ -204,6 +216,8 @@ WatchParty/
     ├── index.html                     # HTML root template with Inter font
     ├── tailwind.config.js             # Emerald green design system tokens
     ├── vite.config.js                 # Vite bundler & API proxy configuration
+    ├── vercel.json                    # Vercel SPA routing rewrite configuration
+    ├── .env                           # Frontend local environment variables
     ├── .env.example                   # Frontend environment template
     └── package.json                   # Frontend dependencies and scripts
 ```
@@ -212,18 +226,27 @@ WatchParty/
 
 ## 6. Installation & Setup Instructions
 
+### Clone Repository
+```bash
+git clone https://github.com/geetanjali0772/WatchParty.git
+cd WatchParty
+```
+
 ### Prerequisites
 - **Node.js**: v18.0.0 or later (v20+ recommended)
 - **npm**: v9.0.0 or later
-- **MongoDB**: Local MongoDB instance (or Docker container running `mongodb://localhost:27017/watchparty`)
+- **MongoDB**: MongoDB Atlas URI or local MongoDB (`mongodb://localhost:27017/watchparty`)
 
 ### Install Dependencies
+
+Install the backend and frontend dependencies directly in their respective folders:
+
 ```bash
-# Install backend dependencies
+# 1. Install backend dependencies
 cd server
 npm install
 
-# Install frontend dependencies
+# 2. Install frontend dependencies
 cd ../client
 npm install
 ```
@@ -236,46 +259,42 @@ npm install
 Create a `.env` file in the `server/` directory:
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/watchparty
-CLIENT_URL=http://localhost:5173
-JWT_SECRET=super-secret-jwt-key-min-32-chars-long-12345
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/watchparty?retryWrites=true&w=majority
+CLIENT_URL=http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174
 NODE_ENV=development
+JWT_SECRET=your_jwt_secret_min_32_characters_long_placeholder
+JWT_EXPIRES_IN=7d
 ```
 
 ### Frontend (`client/.env`)
 Create a `.env` file in the `client/` directory:
 ```env
+# For local development (Vite proxies requests to backend):
 VITE_API_URL=/api
 VITE_SOCKET_URL=http://localhost:5000
 ```
 
 ---
 
-## 8. How to Run Frontend and Backend Locally
+## 8. How to Run Locally
 
-### Option 1: Running Concurrently from Root
-From the root `WatchParty` directory:
+Run the frontend and backend in separate terminal windows:
+
+### Terminal 1: Backend Server
 ```bash
+cd server
 npm run dev
 ```
+*Backend runs on `http://localhost:5000` with active MongoDB connection.*
 
-### Option 2: Running in Separate Terminals
+### Terminal 2: Frontend Client
+```bash
+cd client
+npm run dev
+```
+*Frontend runs on `http://localhost:5173` (or `5174` if 5173 is in use).*
 
-1. **Start Backend Server:**
-   ```bash
-   cd server
-   npm run dev
-   ```
-   *Backend starts on `http://localhost:5000` with active MongoDB connection.*
-
-2. **Start Frontend Client:**
-   ```bash
-   cd client
-   npm run dev
-   ```
-   *Frontend starts on `http://localhost:5173`.*
-
-3. Open your browser and navigate to `http://localhost:5173`.
+Open your browser and navigate to `http://localhost:5173`.
 
 ---
 
@@ -310,6 +329,7 @@ npm run dev
 | `user_left` | `{ userId, username, participants, onlineCount }` | Broadcast when a user disconnects or leaves. |
 | `room_updated` | `{ roomId, roomName }` | Broadcast when the Host renames the room. |
 | `playback_updated` | `{ playbackState, currentTime, lastUpdated, updatedBy }` | Broadcast on play, pause, seek. |
+| `seek_applied` | `{ currentTime, playbackState }` | Dedicated seek execution event for instant synchronization. |
 | `video_changed` | `{ currentVideoId, currentTime, playbackState, updatedBy }` | Broadcast when a new YouTube video is loaded. |
 | `role_assigned` | `{ targetUserId, targetUsername, newRole, participants }` | Broadcast when a user's role is updated. |
 | `host_transferred` | `{ roomId, newHostId, newHostUsername, previousHostId, participants }` | Broadcast when Host ownership is transferred. |
@@ -371,42 +391,64 @@ The application enforces a 3-tier permission hierarchy:
 
 ## 11. Testing & Verification
 
-A comprehensive end-to-end integration and security test suite is located in `server/test/watchparty.test.js`. It runs natively using Node.js's test runner and validates **all 54 test scenarios**:
+A comprehensive integration and security test suite is located in `server/test/watchparty.test.js`. It runs natively using Node.js's test runner:
 
 ```bash
 cd server
 npm test
 ```
 
-### Test Suite Summary:
-- **Total Tests:** 54
-- **Passed:** 54 (100%)
-- **Failed:** 0
-- **Suites:** Authentication, RBAC, Multi-Tab Online Tracking, Playback Synchronization, Drift Correction, Request Approval Workflow, Text Chat & HTML Sanitization, Rate Limiting, Emoji Reactions, Host Transfer ACID Transactions, Invariant Validation, Room Title Rename, Socket Reconnection State Recovery, and Ban Enforcement.
+### Covered Test Categories:
+- **Authentication:** Token creation, cookie issuance, expiration verification, anti-CSRF protection.
+- **RBAC:** Host, Moderator, and Participant permission boundaries; rejection of unauthorized playback commands.
+- **Multi-Tab Tracking:** Online presence tracking across multiple tabs without premature disconnects.
+- **Playback Synchronization:** Real-time play, pause, seek, and video change synchronization.
+- **Host Transfer:** Atomic single-host invariance verified via MongoDB ACID transactions.
+- **Request Approval System:** Playback request submission, Host/Moderator approval, and rejection.
+- **Text Chat & Reactions:** In-room sanitization, rate limiting, and persistence.
+- **Banning & Removal:** Immediate socket disconnect and re-join prevention.
 
 ---
 
-## 12. Production Deployment
+## 12. Deployment Guide
 
-### 1. Database (MongoDB Atlas)
-1. Set up a MongoDB Atlas Replica Set cluster.
-2. Obtain connection URI: `mongodb+srv://<user>:<password>@cluster.mongodb.net/watchparty?retryWrites=true&w=majority`.
+### Deploying Backend to Render
 
-### 2. Backend (Render / Railway / Fly.io)
-- Root Directory: `server`
-- Build Command: `npm install`
-- Start Command: `npm start`
-- Environment Variables:
-  - `PORT`: `5000`
-  - `MONGODB_URI`: `<Atlas URI>`
-  - `CLIENT_URL`: `https://your-watchparty-domain.com`
-  - `JWT_SECRET`: `<64-byte secure key>`
-  - `NODE_ENV`: `production`
+1. Log in to [Render](https://render.com) and click **New + > Web Service**.
+2. Connect your repository: `https://github.com/geetanjali0772/WatchParty.git`.
+3. Configure the service settings:
+   - **Name:** `watchparty-server` (or your choice)
+   - **Root Directory:** `server`
+   - **Environment:** `Node`
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+4. Add the following **Environment Variables** in Render:
+   - `NODE_ENV`: `production`
+   - `PORT`: `5000` *(Render sets `$PORT` dynamically, fallback to 5000)*
+   - `MONGODB_URI`: `mongodb+srv://<username>:<password>@cluster0.mongodb.net/watchparty?retryWrites=true&w=majority`
+   - `JWT_SECRET`: `<minimum-32-characters-secure-secret-key>`
+   - `CLIENT_URL`: `https://your-watchparty-app.vercel.app` *(or `https://*.vercel.app`)*
+5. Click **Create Web Service**. Note your Render URL (e.g. `https://watchparty-server.onrender.com`).
 
-### 3. Frontend (Vercel / Netlify / Render)
-- Root Directory: `client`
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Environment Variables:
-  - `VITE_API_URL`: `/api`
-  - `VITE_SOCKET_URL`: `https://your-watchparty-api.com`
+---
+
+### Deploying Frontend to Vercel
+
+1. Log in to [Vercel](https://vercel.com) and click **Add New > Project**.
+2. Import the `WatchParty` repository.
+3. Configure the project settings:
+   - **Framework Preset:** `Vite`
+   - **Root Directory:** Click Edit and select `client`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. Add the following **Environment Variables** in Vercel:
+   - `VITE_API_URL`: `https://watchparty-server.onrender.com/api`
+   - `VITE_SOCKET_URL`: `https://watchparty-server.onrender.com`
+5. Click **Deploy**.
+6. Once deployed, copy your Vercel deployment URL (e.g. `https://your-watchparty-app.vercel.app`) and ensure it is included in your backend's `CLIENT_URL` environment variable on Render.
+
+---
+
+## 13. License
+
+This project is licensed under the ISC License.

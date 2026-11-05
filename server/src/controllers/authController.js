@@ -34,10 +34,15 @@ export const createSession = async (req, res, next) => {
     });
 
     // Set secure HttpOnly cookie
+    // In production (cross-domain like vercel.app to onrender.com), sameSite must be 'none' and secure must be true
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieSameSite = process.env.COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax');
+    const cookieSecure = isProduction || process.env.COOKIE_SECURE === 'true' || cookieSameSite === 'none';
+
     res.cookie('wp_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -82,10 +87,14 @@ export const getCurrentUser = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieSameSite = process.env.COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax');
+    const cookieSecure = isProduction || process.env.COOKIE_SECURE === 'true' || cookieSameSite === 'none';
+
     res.clearCookie('wp_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       path: '/',
     });
 

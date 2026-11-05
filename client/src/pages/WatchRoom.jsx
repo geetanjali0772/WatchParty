@@ -24,6 +24,7 @@ import VideoPlayer from '../components/VideoPlayer';
 import ParticipantsList from '../components/ParticipantsList';
 import RequestPanel from '../components/RequestPanel';
 import ChatPanel from '../components/ChatPanel';
+import WatchQueuePanel from '../components/WatchQueuePanel';
 
 export const WatchRoom = () => {
   const { roomId: routeRoomId } = useParams();
@@ -45,6 +46,8 @@ export const WatchRoom = () => {
     myRole,
     participants,
     pendingRequests,
+    videoQueue,
+    pendingVideoRequests,
     onlineCount,
     isConnected,
     notification,
@@ -57,6 +60,12 @@ export const WatchRoom = () => {
     sendPause,
     sendSeek,
     sendChangeVideo,
+    sendAddToQueue,
+    sendRequestQueueVideo,
+    sendApproveVideoRequest,
+    sendRejectVideoRequest,
+    sendRemoveQueueItem,
+    sendPlayNextVideo,
     sendAssignRole,
     sendRemoveParticipant,
     sendPlaybackRequest,
@@ -415,9 +424,8 @@ export const WatchRoom = () => {
               onPause={(time) => sendPause(time)}
               onSeek={(time) => sendSeek(time)}
               onChangeVideo={(urlOrId) => sendChangeVideo(urlOrId)}
-              onRequestVideoChange={(urlOrId) =>
-                sendPlaybackRequest('change_video', { url: urlOrId })
-              }
+              onAddToQueue={(url) => sendAddToQueue(url)}
+              onRequestQueueVideo={(url) => sendRequestQueueVideo(url)}
               onRequestAction={(type, payload) => sendPlaybackRequest(type, payload)}
             />
           </div>
@@ -522,7 +530,7 @@ export const WatchRoom = () => {
       {/* Feature Modals for bottom pills */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white border border-gray-200 rounded-3xl p-6 max-w-md w-full shadow-2xl relative">
+          <div className={`bg-white border border-gray-200 rounded-3xl p-6 ${activeModal === 'queue' ? 'max-w-2xl max-h-[88vh] overflow-y-auto' : 'max-w-md'} w-full shadow-2xl relative`}>
             <button
               onClick={() => setActiveModal(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100"
@@ -553,17 +561,16 @@ export const WatchRoom = () => {
             )}
 
             {activeModal === 'queue' && (
-              <div>
-                <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <ListOrdered className="w-5 h-5 text-emerald-600" /> Watch Queue
-                </h3>
-                <p className="text-xs text-gray-500 mb-4">
-                  Current Video: <span className="font-semibold text-emerald-700">Playing Now</span>
-                </p>
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-600 text-center">
-                  Paste any YouTube URL in the bottom input to change videos immediately or request a video queue switch!
-                </div>
-              </div>
+              <WatchQueuePanel
+                currentVideoId={currentVideoId}
+                videoQueue={videoQueue}
+                pendingVideoRequests={pendingVideoRequests}
+                canManageQueue={canReviewRequests}
+                onApprove={sendApproveVideoRequest}
+                onReject={sendRejectVideoRequest}
+                onRemove={sendRemoveQueueItem}
+                onPlayNext={sendPlayNextVideo}
+              />
             )}
 
             {activeModal === 'settings' && (

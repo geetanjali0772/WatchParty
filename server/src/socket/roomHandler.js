@@ -144,6 +144,8 @@ export const registerRoomHandlers = (io, socket) => {
         myRole: participant.role,
         participants,
         pendingRequests: room.pendingRequests || [],
+        videoQueue: room.videoQueue || [],
+        pendingVideoRequests: room.pendingVideoRequests || [],
         onlineCount,
       };
 
