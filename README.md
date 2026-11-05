@@ -1,6 +1,7 @@
 # WatchParty 🎬🍿
 > Watch YouTube Together in Real Time with Sub-Second Synchronization & Role-Based Control.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://watch-party-omega-six.vercel.app/)
 [![Repository](https://img.shields.io/badge/GitHub-geetanjali0772%2FWatchParty-10b981?style=for-the-badge&logo=github)](https://github.com/geetanjali0772/WatchParty.git)
 [![React](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
@@ -16,6 +17,7 @@
 
 Whenever a room controller plays, pauses, seeks, or changes a video, every connected participant's player reacts synchronously. A role-based access control (RBAC) engine ensures organized playback while giving participants an approval-driven request interface.
 
+- **Live Demo / Deployed Application:** [https://watch-party-omega-six.vercel.app/](https://watch-party-omega-six.vercel.app/)
 - **GitHub Repository:** [https://github.com/geetanjali0772/WatchParty.git](https://github.com/geetanjali0772/WatchParty.git)
 
 ---
@@ -280,14 +282,7 @@ VITE_SOCKET_URL=http://localhost:5000
 
 Run the frontend and backend in separate terminal windows:
 
-### Terminal 1: Backend Server
-```bash
-cd server
-npm run dev
-```
-*Backend runs on `http://localhost:5000` with active MongoDB connection.*
-
-### Terminal 2: Frontend Client
+### Terminal 1: Frontend Client
 ```bash
 cd client
 npm run dev
@@ -295,6 +290,12 @@ npm run dev
 *Frontend runs on `http://localhost:5173` (or `5174` if 5173 is in use).*
 
 Open your browser and navigate to `http://localhost:5173`.
+
+### Terminal 2: Backend Server
+```bash
+cd server
+npm run dev
+```
 
 ---
 
@@ -445,7 +446,8 @@ npm test
    - `VITE_API_URL`: `https://watchparty-server.onrender.com/api`
    - `VITE_SOCKET_URL`: `https://watchparty-server.onrender.com`
 5. Click **Deploy**.
-6. Once deployed, copy your Vercel deployment URL (e.g. `https://your-watchparty-app.vercel.app`) and ensure it is included in your backend's `CLIENT_URL` environment variable on Render.
+6. Once deployed, copy your Vercel deployment URL and ensure it is included in your backend's `CLIENT_URL` environment variable on Render.
+   - **Live Production URL:** [https://watch-party-omega-six.vercel.app/](https://watch-party-omega-six.vercel.app/)
 
 ---
 
